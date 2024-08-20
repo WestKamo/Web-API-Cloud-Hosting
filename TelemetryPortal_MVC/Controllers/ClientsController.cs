@@ -54,7 +54,7 @@ namespace YourNamespace.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Client client)
         {
-            if (id != client.Id)
+            if (id ==null)
             {
                 return NotFound();
             }

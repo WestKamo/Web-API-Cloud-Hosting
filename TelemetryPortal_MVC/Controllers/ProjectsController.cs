@@ -53,7 +53,7 @@ namespace TelemetryPortal_MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Project project)
         {
-            if (id != project.Id)
+            if (id == null)
             {
                 return NotFound();
             }
