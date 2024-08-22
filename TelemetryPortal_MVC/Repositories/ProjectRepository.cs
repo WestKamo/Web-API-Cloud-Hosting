@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using TelemetryPortal_MVC.Data;
 using TelemetryPortal_MVC.Models;
 
-namespace YourNamespace.Repositories
+namespace TelemetryPortal_MVC.Repositories
 {
     public class ProjectRepository
     {
@@ -22,24 +22,24 @@ namespace YourNamespace.Repositories
             return await _context.Projects.ToListAsync();
         }
 
-        public async Task<Project> GetProjectByIdAsync(int id)
+        public async Task<Project> GetProjectByIdAsync(Guid id)
         {
-            return await _context.Projects.FindAsync(id);
+            return await _context.Projects.FirstOrDefaultAsync(m => m.ProjectId == id);
         }
 
         public async Task AddProjectAsync(Project project)
         {
-            await _context.Projects.AddAsync(project);
+            _context.Add(project);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateProjectAsync(Project project)
         {
-            _context.Projects.Update(project);
+            _context.Update(project);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteProjectAsync(int id)
+        public async Task DeleteProjectAsync(Guid id)
         {
             var project = await _context.Projects.FindAsync(id);
             if (project != null)
@@ -48,6 +48,10 @@ namespace YourNamespace.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public bool ProjectExists(Guid id)
+        {
+            return _context.Projects.Any(e => e.ProjectId == id);
+        }
     }
 }
-

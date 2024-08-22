@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using TelemetryPortal_MVC.Data;
 using TelemetryPortal_MVC.Models;
 
-namespace YourNamespace.Repositories
+namespace TelemetryPortal_MVC.Repositories
 {
     public class ClientRepository
     {
@@ -22,24 +22,24 @@ namespace YourNamespace.Repositories
             return await _context.Clients.ToListAsync();
         }
 
-        public async Task<Client> GetClientByIdAsync(int id)
+        public async Task<Client> GetClientByIdAsync(Guid id)
         {
-            return await _context.Clients.FindAsync(id);
+            return await _context.Clients.FirstOrDefaultAsync(m => m.ClientId == id);
         }
 
         public async Task AddClientAsync(Client client)
         {
-            await _context.Clients.AddAsync(client);
+            _context.Add(client);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateClientAsync(Client client)
         {
-            _context.Clients.Update(client);
+            _context.Update(client);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteClientAsync(int id)
+        public async Task DeleteClientAsync(Guid id)
         {
             var client = await _context.Clients.FindAsync(id);
             if (client != null)
@@ -48,6 +48,10 @@ namespace YourNamespace.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public bool ClientExists(Guid id)
+        {
+            return _context.Clients.Any(e => e.ClientId == id);
+        }
     }
 }
-

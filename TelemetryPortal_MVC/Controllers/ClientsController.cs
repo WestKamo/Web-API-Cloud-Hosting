@@ -1,49 +1,76 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using YourNamespace.Repositories;
-using TelemetryPortal_MVC.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TelemetryPortal_MVC.Models;
+using TelemetryPortal_MVC.Repositories;
 
-
-namespace YourNamespace.Controllers
+namespace TelemetryPortal_MVC.Controllers
 {
-    public class ClientController : Controller
+    public class ClientsController : Controller
     {
         private readonly ClientRepository _clientRepository;
 
-        public ClientController(ClientRepository clientRepository)
+        public ClientsController(ClientRepository clientRepository)
         {
             _clientRepository = clientRepository;
         }
 
+        // GET: Clients
         public async Task<IActionResult> Index()
         {
             var clients = await _clientRepository.GetAllClientsAsync();
             return View(clients);
         }
 
-        public async Task<IActionResult> Details(int id)
+        // GET: Clients/Details/5
+        public async Task<IActionResult> Details(Guid? id)
         {
-            var client = await _clientRepository.GetClientByIdAsync(id);
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var client = await _clientRepository.GetClientByIdAsync(id.Value);
             if (client == null)
             {
                 return NotFound();
             }
+
             return View(client);
         }
 
-        public async Task<IActionResult> Create(Client client)
+        // GET: Clients/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Clients/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("ClientName,PrimaryContactEmail,DateOnboarded")] Client client)
         {
             if (ModelState.IsValid)
             {
+                client.ClientId = Guid.NewGuid();
                 await _clientRepository.AddClientAsync(client);
                 return RedirectToAction(nameof(Index));
             }
             return View(client);
         }
 
-        public async Task<IActionResult> Edit(int id)
+        // GET: Clients/Edit/5
+        public async Task<IActionResult> Edit(Guid? id)
         {
-            var client = await _clientRepository.GetClientByIdAsync(id);
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var client = await _clientRepository.GetClientByIdAsync(id.Value);
             if (client == null)
             {
                 return NotFound();
@@ -51,38 +78,62 @@ namespace YourNamespace.Controllers
             return View(client);
         }
 
+        // POST: Clients/Edit/5
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Client client)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Guid id, [Bind("ClientName,PrimaryContactEmail,DateOnboarded")] Client client)
         {
-            if (id ==null)
+            if (id != client.ClientId)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                await _clientRepository.UpdateClientAsync(client);
+                try
+                {
+                    await _clientRepository.UpdateClientAsync(client);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_clientRepository.ClientExists(client.ClientId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(client);
         }
 
-        public async Task<IActionResult> Delete(int id)
+        // GET: Clients/Delete/5
+        public async Task<IActionResult> Delete(Guid? id)
         {
-            var client = await _clientRepository.GetClientByIdAsync(id);
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var client = await _clientRepository.GetClientByIdAsync(id.Value);
             if (client == null)
             {
                 return NotFound();
             }
+
             return View(client);
         }
 
+        // POST: Clients/Delete/5
         [HttpPost, ActionName("Delete")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             await _clientRepository.DeleteClientAsync(id);
             return RedirectToAction(nameof(Index));
         }
     }
 }
-
